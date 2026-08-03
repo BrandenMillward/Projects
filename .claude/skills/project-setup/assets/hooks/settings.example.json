@@ -1,0 +1,112 @@
+{
+  "_README": [
+    "Working examples of the recommended hooks. Copy the blocks you want into",
+    ".claude/settings.json, substitute the project's real commands, and DELETE the rest.",
+    "A settings file full of unused hooks is one nobody edits confidently.",
+    "",
+    "Project-wide rules (formatting, command guards) -> .claude/settings.json (committed).",
+    "Anything personal (webhook URLs, machine paths)  -> .claude/settings.local.json (gitignored).",
+    "",
+    "Every PreToolUse/PostToolUse hook runs on EVERY matching tool call, so keep them fast.",
+    "Test each hook by triggering it before declaring it done — a silently failing hook is",
+    "worse than no hook, because you now believe you're protected.",
+    "",
+    "Remove this _README key from the real settings file."
+  ],
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "_comment": "Format on write. Swap the formatter for the project's own: ruff format / gofmt / rustfmt / etc.",
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.css|*.md) npx --no-install prettier --write \"$f\" 2>/dev/null || true ;; *.py) ruff format \"$f\" 2>/dev/null || true ;; esac"
+          }
+        ]
+      },
+      {
+        "_comment": "Typecheck TypeScript after edits. Drop this if the project isn't TS or tsc is slow.",
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx) npx --no-install tsc --noEmit 2>&1 | head -30 ;; esac"
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "_comment": "Guard genuinely unrecoverable commands. Keep the list SHORT and specific — a guard that fires on safe commands gets disabled within a week.",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if printf '%s' \"$cmd\" | grep -qE 'rm[[:space:]]+-[a-zA-Z]*[rf][a-zA-Z]*[[:space:]]+(/|~|\\$HOME)([[:space:]]|$)|git[[:space:]]+push[[:space:]]+.*--force([[:space:]]+|=).*(main|master)|git[[:space:]]+push[[:space:]]+--force[[:space:]]+origin[[:space:]]+(main|master)|git[[:space:]]+clean[[:space:]]+-[a-zA-Z]*f[a-zA-Z]*d|DROP[[:space:]]+DATABASE|mkfs\\.'; then echo 'BLOCKED by PreToolUse hook: destructive command. Run it manually if you are certain.' >&2; exit 2; fi"
+          }
+        ]
+      },
+      {
+        "_comment": "Block commits that would leak secrets. Strongly recommended for anything with paid API keys.",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); case \"$cmd\" in *'git commit'*) if git diff --cached --name-only | grep -qE '(^|/)\\.env$'; then echo 'BLOCKED: .env is staged. Unstage it before committing.' >&2; exit 2; fi; if git diff --cached -U0 | grep -qE '^\\+.*(sk-[A-Za-z0-9_-]{16,}|sk-ant-[A-Za-z0-9_-]{16,}|AIza[A-Za-z0-9_-]{30,}|ghp_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16})'; then echo 'BLOCKED: staged diff looks like it contains an API key.' >&2; exit 2; fi ;; esac"
+          }
+        ]
+      }
+    ],
+
+    "SessionStart": [
+      {
+        "_comment": "Print where the project is, so picking it up after two weeks away isn't archaeology.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"branch: $(git branch --show-current 2>/dev/null || echo 'not a repo')\"; git status --short 2>/dev/null | head -10; if [ -f docs/PROJECT_STATUS.md ]; then echo; sed -n '/## What.s next/,/^## /p' docs/PROJECT_STATUS.md | head -12; fi"
+          }
+        ]
+      }
+    ],
+
+    "Stop": [
+      {
+        "_comment": "Run tests when Claude finishes. ONLY add this if the suite is fast — it delays every single response.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm test --silent 2>&1 | tail -20 || true"
+          }
+        ]
+      }
+    ],
+
+    "PreCompact": [
+      {
+        "_comment": "Snapshot the transcript before it's compacted. Useful for long sessions and the retro agent.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=.claude/transcripts; mkdir -p \"$d\"; t=$(jq -r '.transcript_path // empty'); [ -n \"$t\" ] && [ -f \"$t\" ] && cp \"$t\" \"$d/$(date +%Y%m%d-%H%M%S).jsonl\" || true"
+          }
+        ]
+      }
+    ],
+
+    "SessionEnd": [
+      {
+        "_comment": "Append a line to a local session log. Low value alone; pairs with the retro agent.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p .claude && echo \"$(date -Iseconds) session ended on $(git branch --show-current 2>/dev/null)\" >> .claude/session.log"
+          }
+        ]
+      }
+    ]
+  }
+}
