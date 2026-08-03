@@ -24,7 +24,9 @@ When the user gives you a vague requirement, don't just ask "can you be more spe
 
 ## Round structure
 
-Aim for 3–5 rounds, each a batched `AskUserQuestion` call or a short set of direct questions. Don't run all of these — pick what's actually unknown for this project.
+Aim for 3–5 rounds. Don't run all of these — pick what's actually unknown for this project.
+
+Each round is a short exchange, not a form. The bullets below are what a round *covers*, not a list to fire off at once: put the one or two that genuinely block you into `AskUserQuestion`, and handle the rest by stating your inference and inviting a correction. A round that ends with the user saying "no, it's more like X" has done its job.
 
 ### Round 1 — Who and why
 

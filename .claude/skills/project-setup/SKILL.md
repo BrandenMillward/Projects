@@ -71,7 +71,7 @@ One initial commit containing the whole scaffold, on a branch, with a message th
 
 The failure mode of a skill like this is a 40-question interrogation followed by a wall of generated files. Avoid it:
 
-- **Batch questions, don't serialize them.** Use `AskUserQuestion` with multiple questions per call where the answers are independent. Give a recommended option first and mark it — most people want a default they can override, not a blank slate.
+- **Ask one or two questions at a time, not four.** `AskUserQuestion` takes up to four, and filling the slots is a trap: people answer the first properly and the rest thinly, so you trade three real answers for one good one and three shrugs. Ask only what genuinely blocks the next step, and give a recommended option first — most people want a default they can override, not a blank slate.
 - **Answer your own questions where you can.** If the project is obviously a web app, don't ask whether it needs a frontend. Infer, state the inference, and let them correct it. Every question you don't have to ask buys you one you do.
 - **Show, don't ask, for structure.** Draft the milestone table and ask "what's wrong with this?" rather than asking them to invent it. Reacting is easier than generating.
 - **Let them cut scope.** If they want to skip a step ("no hooks for now"), skip it and note it in `PROJECT_STATUS.md` under what's next. Don't relitigate.

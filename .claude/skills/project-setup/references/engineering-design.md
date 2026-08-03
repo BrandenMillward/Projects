@@ -31,7 +31,7 @@ Then a closing paragraph: the recommended stack end to end, what it costs to run
 
 ## Step 2 — Ask
 
-Present the choice per layer with `AskUserQuestion`, recommendation first and marked `(Recommended)`. Batch the layers into one call where the answers don't depend on each other.
+Present the choice per layer with `AskUserQuestion`, recommendation first and marked `(Recommended)`. Put the one or two layers where the answer is genuinely open into the call; state your pick and reasoning for the rest in prose, and let the user push back. Four questions in one call gets you one considered answer and three defaults accepted on sight.
 
 Don't ask about layers where the project only realistically supports one answer — state the choice and the reason, and move on. Asking someone to pick between three options you've already ruled out two of is theatre.
 

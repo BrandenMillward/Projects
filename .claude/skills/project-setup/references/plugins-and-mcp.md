@@ -14,7 +14,7 @@ Check what's already installed before recommending anything. Recommending a serv
 
 ## How to run each walkthrough
 
-Go one at a time, and for each candidate give three things: **what it does**, **why this project specifically wants it** (tie it to a requirement or milestone — if you can't, that's a sign to drop it), and **what it costs** (an account, an API key, a paid plan, or context budget). Then ask yes/no. Batch the yes/no calls with `AskUserQuestion` once the user has heard all the pitches.
+Go one at a time, and for each candidate give three things: **what it does**, **why this project specifically wants it** (tie it to a requirement or milestone — if you can't, that's a sign to drop it), and **what it costs** (an account, an API key, a paid plan, or context budget). Once the user has heard all the pitches, ask once — a single `AskUserQuestion` with `multiSelect: true` and one option per candidate, so they pick the set. That reads as a menu, which is what it is; four separate yes/no questions reads as an interrogation and gets rubber-stamped.
 
 Then be honest about the ceiling: **every MCP server's tool definitions consume context in every session.** Five servers is usually fine; fifteen measurably degrades performance and crowds out the actual work. Recommend a small set and tell the user they can add more later — this is the advice most setup guides skip, and it's the one that matters most six weeks in.
 
