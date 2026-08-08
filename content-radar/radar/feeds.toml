@@ -1,0 +1,225 @@
+# Source list for the content radar.
+#
+# lane   — ai | regulated | genfinance
+# weight — trust/signal weight in [0, 1]. Primary sources (regulators, labs,
+#          practitioners who ship) outrank aggregators and trade press.
+# kind   — rss | hn | arxiv
+#
+# Every source here is free and keyless. Reddit is deliberately absent:
+# unauthenticated .json endpoints were deprecated in May 2026 (403), and OAuth
+# registration is approval-gated. See docs/project_spec.md.
+#
+# Adding a source is a one-entry change; a source that starts failing is
+# reported in the brief rather than silently dropped.
+
+# ---------------------------------------------------------------- AI lane ----
+
+[[source]]
+name = "Simon Willison"
+kind = "rss"
+lane = "ai"
+weight = 0.95
+url = "https://simonwillison.net/atom/everything/"
+
+[[source]]
+name = "Anthropic Engineering"
+kind = "rss"
+lane = "ai"
+weight = 0.95
+url = "https://www.anthropic.com/rss.xml"
+
+[[source]]
+name = "OpenAI News"
+kind = "rss"
+lane = "ai"
+weight = 0.85
+url = "https://openai.com/news/rss.xml"
+
+[[source]]
+name = "Google DeepMind"
+kind = "rss"
+lane = "ai"
+weight = 0.85
+url = "https://deepmind.google/blog/rss.xml"
+
+[[source]]
+name = "Hugging Face"
+kind = "rss"
+lane = "ai"
+weight = 0.8
+url = "https://huggingface.co/blog/feed.xml"
+
+[[source]]
+name = "MIT Technology Review"
+kind = "rss"
+lane = "ai"
+weight = 0.75
+url = "https://www.technologyreview.com/feed/"
+
+[[source]]
+name = "Ars Technica"
+kind = "rss"
+lane = "ai"
+weight = 0.7
+url = "https://feeds.arstechnica.com/arstechnica/technology-lab"
+
+[[source]]
+name = "The Verge AI"
+kind = "rss"
+lane = "ai"
+weight = 0.6
+url = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
+
+[[source]]
+name = "TechCrunch AI"
+kind = "rss"
+lane = "ai"
+weight = 0.55
+url = "https://techcrunch.com/category/artificial-intelligence/feed/"
+
+[[source]]
+name = "VentureBeat AI"
+kind = "rss"
+lane = "ai"
+weight = 0.5
+url = "https://venturebeat.com/category/ai/feed/"
+
+[[source]]
+name = "InfoQ AI"
+kind = "rss"
+lane = "ai"
+weight = 0.6
+url = "https://feed.infoq.com/ai-ml-data-eng/"
+
+[[source]]
+name = "HN — AI agents"
+kind = "hn"
+lane = "ai"
+weight = 0.7
+query = "AI agents"
+min_points = 40
+
+[[source]]
+name = "HN — LLM"
+kind = "hn"
+lane = "ai"
+weight = 0.7
+query = "LLM"
+min_points = 60
+
+[[source]]
+name = "arXiv cs.AI"
+kind = "arxiv"
+lane = "ai"
+weight = 0.65
+category = "cs.AI"
+
+[[source]]
+name = "arXiv cs.CL"
+kind = "arxiv"
+lane = "ai"
+weight = 0.6
+category = "cs.CL"
+
+# -------------------------------------------------- Regulated industries ----
+
+[[source]]
+name = "EU AI Act"
+kind = "rss"
+lane = "regulated"
+weight = 0.95
+url = "https://artificialintelligenceact.eu/feed/"
+
+[[source]]
+name = "FCA News"
+kind = "rss"
+lane = "regulated"
+weight = 0.95
+url = "https://www.fca.org.uk/news/rss.xml"
+
+[[source]]
+name = "ICO News"
+kind = "rss"
+lane = "regulated"
+weight = 0.9
+url = "https://ico.org.uk/rss/news-and-blogs/"
+
+[[source]]
+name = "Bank of England"
+kind = "rss"
+lane = "regulated"
+weight = 0.9
+url = "https://www.bankofengland.co.uk/rss/news"
+
+[[source]]
+name = "NIST"
+kind = "rss"
+lane = "regulated"
+weight = 0.8
+url = "https://www.nist.gov/news-events/news/rss.xml"
+
+[[source]]
+name = "Finextra"
+kind = "rss"
+lane = "regulated"
+weight = 0.55
+url = "https://www.finextra.com/rss/headlines.aspx"
+
+[[source]]
+name = "FT Adviser"
+kind = "rss"
+lane = "regulated"
+weight = 0.6
+url = "https://www.ftadviser.com/rss.xml"
+
+[[source]]
+name = "HN — AI regulation"
+kind = "hn"
+lane = "regulated"
+weight = 0.6
+query = "AI regulation compliance"
+min_points = 30
+
+# ------------------------------------------------ Generational finance ----
+
+[[source]]
+name = "MoneySavingExpert"
+kind = "rss"
+lane = "genfinance"
+weight = 0.85
+url = "https://www.moneysavingexpert.com/rss/"
+
+[[source]]
+name = "Which? News"
+kind = "rss"
+lane = "genfinance"
+weight = 0.85
+url = "https://www.which.co.uk/news/feed/"
+
+[[source]]
+name = "Institute for Fiscal Studies"
+kind = "rss"
+lane = "genfinance"
+weight = 0.9
+url = "https://ifs.org.uk/rss.xml"
+
+[[source]]
+name = "Pensions Age"
+kind = "rss"
+lane = "genfinance"
+weight = 0.75
+url = "https://www.pensionsage.com/pa/rss.php"
+
+[[source]]
+name = "This is Money"
+kind = "rss"
+lane = "genfinance"
+weight = 0.5
+url = "https://www.thisismoney.co.uk/money/index.rss"
+
+[[source]]
+name = "GOV.UK — student finance"
+kind = "rss"
+lane = "genfinance"
+weight = 0.9
+url = "https://www.gov.uk/search/news-and-communications.atom?keywords=student+finance"
