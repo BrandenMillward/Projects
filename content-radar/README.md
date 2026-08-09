@@ -27,12 +27,14 @@ unit-testable and means the project needs no API key at all.
 ## Quick start
 
 ```bash
-cd content-radar
+git clone https://github.com/BrandenMillward/news-scraper-video-draft.git
+cd news-scraper-video-draft
 uv venv && uv pip install -e ".[dev]"
-uv run pytest                          # 46 tests, all offline
+uv run pytest                          # 59 tests, all offline
 
 uv run radar fetch --since 7           # poll sources
 uv run radar score --since 7 --top 30  # cluster + rank
+uv run radar prune                     # keep committed state bounded
 ```
 
 Then run `/radar` in Claude Code to produce and deliver the brief, and
@@ -59,10 +61,27 @@ quiet news week must never look the same.
 | `.claude/commands/` | `/radar`, `/video` |
 | `docs/` | Spec, architecture, status, changelog |
 
+## Where it runs
+
+`.github/workflows/radar.yml` does the deterministic half on a schedule —
+Monday 06:07 UTC, `fetch` → `score` → `prune`, committing the shortlist. GitHub
+Actions has open egress and runs whether or not your laptop is on. The editorial
+half then reads this repo rather than the internet.
+
+Run it by hand any time from the Actions tab (**Run workflow**), or locally with
+the commands above.
+
+This repo is **private** deliberately: `briefs/`, `drafts/` and the decision log
+hold unpublished content plans and the reasons topics were rejected.
+
 ## Status
 
-MVP is built and verified offline (46 tests; fixture runs confirm clustering,
-ranking, the week-two dedupe and the failure paths). **`radar fetch` has not yet
-run against live sources** — the build environment blocked outbound egress — so
-some feed URLs will need correcting on the first real run. The per-source failure
-report exists to make that quick. See `docs/PROJECT_STATUS.md`.
+MVP is built and verified offline — **59 tests**; fixture runs confirm duplicate
+collapse across four outlets, signal ranking 6× above noise, week-two demotion
+from 0.84 to 0.13, and the failure paths.
+
+**`radar fetch` has not yet run against live sources.** The environment it was
+built in blocks outbound egress to feed hosts, so some of the ~29 feed URLs will
+be wrong. The first Actions run — or a local run — will name exactly which. The
+per-source failure report exists to make that a quick fix. See
+`docs/PROJECT_STATUS.md`.

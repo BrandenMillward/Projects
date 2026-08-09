@@ -22,6 +22,9 @@ DECISIONS = STATE_DIR / "decisions.jsonl"
 
 SEEN_RETENTION_DAYS = 180
 KILLED_SUPPRESSION_DAYS = 90
+# Raw items age out fast — scoring only looks at a recent window, and this file
+# is committed to git.
+ITEM_RETENTION_DAYS = 45
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -74,6 +77,40 @@ def read_items(path: Path = ITEMS, since_days: int | None = None) -> list[Item]:
         if parsed >= cutoff:
             kept.append(item)
     return kept
+
+
+def prune_items(path: Path = ITEMS, days: int = ITEM_RETENTION_DAYS) -> int:
+    """Drop items older than *days* from the raw item log.
+
+    Without this the file grows forever, and it is committed to git — a weekly
+    job would add roughly 20k items a year to a file nobody reads directly.
+    Scoring only ever looks at a recent window, so old rows earn nothing. The
+    seen-set is what remembers across time, and it is pruned separately.
+    """
+    rows = _read_jsonl(path)
+    if not rows:
+        return 0
+
+    cutoff = datetime.now(UTC) - timedelta(days=days)
+    kept = []
+    for row in rows:
+        stamp = row.get("published_at") or row.get("fetched_at") or ""
+        try:
+            at = datetime.fromisoformat(stamp)
+        except (ValueError, TypeError):
+            kept.append(row)  # undated rows are kept rather than silently lost
+            continue
+        if at.tzinfo is None:
+            at = at.replace(tzinfo=UTC)
+        if at >= cutoff:
+            kept.append(row)
+
+    removed = len(rows) - len(kept)
+    if removed:
+        path.write_text(
+            "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in kept), encoding="utf-8"
+        )
+    return removed
 
 
 def seen_hashes(path: Path = SEEN) -> set[str]:

@@ -19,12 +19,12 @@ layer *is* the session, which is why this needs no API key.
 ## Commands
 
 ```bash
-cd content-radar
-uv run pytest                          # 46 tests, all offline
+uv run pytest                          # 59 tests, all offline
 uv run radar fetch --since 7           # poll sources -> state/items.jsonl
 uv run radar score --since 7 --top 30  # cluster + score -> state/candidates.json
 uv run radar notify --brief briefs/YYYY-MM-DD.md
-uv run radar seen                      # mark surfaced, prune >180d
+uv run radar seen                      # mark surfaced candidates as seen
+uv run radar prune                     # trim items >45d, seen >180d
 uv run ruff check .
 ```
 
@@ -55,8 +55,19 @@ greppable and readable on GitHub from a phone. Details in `docs/ARCHITECTURE.md`
 
 ## Repository etiquette
 
-Lives inside `BrandenMillward/Projects`. Work on `claude/*` branches, conventional
-commits, no PR unless asked.
+Standalone **private** repo. Private on purpose: `briefs/`, `state/decisions.jsonl`
+and `drafts/` hold unpublished content plans and the reasons topics were
+rejected. Don't make it public without moving that content out first.
+
+Work on `claude/*` branches, conventional commits, no PR unless asked.
+
+## Scheduled runs
+
+`.github/workflows/radar.yml` runs `fetch` → `score` → `prune` every Monday and
+commits the shortlist to `state/`. Claude then reads the repo rather than the
+open internet, which is why the editorial half doesn't need egress. A degraded
+fetch (>30% of sources failing) fails the job deliberately, so GitHub's own
+failure email becomes the alert.
 
 ## Documentation map
 

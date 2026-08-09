@@ -116,7 +116,15 @@ def _cmd_seen(args: argparse.Namespace) -> int:
     urls = [u for c in data.get("candidates", []) for u in c.get("urls", [])]
     added = state_mod.mark_seen(urls)
     pruned = state_mod.prune_seen()
-    print(f"marked {added} new URLs as seen; pruned {pruned} expired entries")
+    print(f"marked {added} new URLs as seen; pruned {pruned} expired seen entries")
+    return 0
+
+
+def _cmd_prune(args: argparse.Namespace) -> int:
+    """Keep the committed state files from growing without bound."""
+    items = state_mod.prune_items(days=args.item_days)
+    seen = state_mod.prune_seen(days=args.seen_days)
+    print(f"pruned {items} items (>{args.item_days}d) and {seen} seen entries (>{args.seen_days}d)")
     return 0
 
 
@@ -146,6 +154,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     seen = sub.add_parser("seen", help="mark surfaced candidates as seen, and prune")
     seen.set_defaults(func=_cmd_seen)
+
+    prune = sub.add_parser("prune", help="trim committed state files")
+    prune.add_argument("--item-days", type=int, default=state_mod.ITEM_RETENTION_DAYS)
+    prune.add_argument("--seen-days", type=int, default=state_mod.SEEN_RETENTION_DAYS)
+    prune.set_defaults(func=_cmd_prune)
 
     decide = sub.add_parser("decide", help="record a decision about a topic")
     decide.add_argument("cluster_id")

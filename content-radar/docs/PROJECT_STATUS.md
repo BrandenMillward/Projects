@@ -38,15 +38,33 @@
 
 ## What's next
 
-1. **Run `uv run radar fetch --since 7` somewhere with open egress.** Fix whichever
-   feed URLs 404 or 403 from the failure report. This is the one thing standing
-   between MVP-built and MVP-working.
-2. **Run `/radar` end to end for real** and check the brief is worth reading —
-   the scoring weights are a first guess and will need tuning against real items.
-3. **Create the weekly Routine** (`create_new_session_on_fire: true`,
-   `notifications: {push, email}`, Monday morning at an off-peak minute).
-   Verify the first unattended firing actually delivered before trusting it.
-4. **Add Telegram** once the brief is proving useful: @BotFather → token + chat
-   ID → `.env`. Roughly five minutes.
-5. **Draft one video package** with `/video` and see whether the two-cut format
+1. **Trigger the workflow manually** — Actions tab → *Weekly fetch* → **Run
+   workflow**. GitHub runners have open egress, so this is the first real test of
+   `radar fetch` and the fastest way to find out which feed URLs are wrong. The
+   run will go red if more than 30% fail; the `fetch-log` artifact names each one.
+2. **Fix the failing feeds** in `radar/feeds.toml` from that log, and re-run until
+   the job is green. This is the one thing standing between MVP-built and
+   MVP-working.
+3. **Run `/radar` end to end** against the committed `state/candidates.json` and
+   judge whether the brief is worth reading. The scoring weights are a first
+   guess — `authority` is deliberately the heaviest at 0.30, and that is the knob
+   to turn first if the output feels wrong.
+4. **Create the weekly Routine** for the editorial half
+   (`create_new_session_on_fire: true`, `notifications: {push, email}`). Only
+   after step 2 is green — a Routine whose first unattended firing is also its
+   first real test will just deliver a failure notice.
+5. **Add Telegram** once the brief is proving useful: @BotFather → token + chat
+   ID → `.env` and repo secrets. Roughly five minutes.
+6. **Draft one video package** with `/video` and see whether the two-cut format
    survives contact with an actual recording.
+
+## Where things run
+
+| Half | Runs on | Needs |
+|---|---|---|
+| `fetch` → `score` → `prune` | GitHub Actions, Monday 06:07 UTC | Open egress (runners have it) |
+| `/radar` editorial, `/video` | A Claude session | This repo; no egress for the scoring input |
+
+The split exists because the Claude environment this was built in blocks outbound
+egress to feed hosts. Actions sidesteps that entirely: it commits the shortlist,
+and the editorial half reads the repo rather than the internet.
