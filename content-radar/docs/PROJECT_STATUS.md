@@ -30,15 +30,37 @@
 
 ## Blocked
 
-- **Live fetch unverified.** The build sandbox blocks outbound egress to every
-  feed host (403 at the egress proxy, an organisation policy denial — not
-  something to route around). `radar fetch` has therefore never run against real
-  sources. Some feed URLs in `feeds.toml` will be wrong; the per-source failure
-  report exists to make that a quick fix on the first real run.
+Nothing. The first live run cleared the one outstanding blocker.
+
+## First live run — 2026-08-14
+
+Ran green on GitHub Actions in 29 seconds: **2,677 items from 23 of 29 sources.**
+That verified the whole chain end to end for the first time — fetch, cluster,
+score, prune, and the commit-back — on real data rather than fixtures.
+
+Six sources failed, and the fixes were not all "correct the URL":
+
+| Source | Failure | Outcome |
+|---|---|---|
+| Anthropic Engineering | 404 | **Dropped** — no official RSS feed exists, only community scrapers |
+| ICO News | 404 | **Dropped** — ICO retired its feeds in a site redesign |
+| FT Adviser | 404 | **Dropped** — no public feed URL could be verified |
+| Pensions Age | 404 | **Dropped** — same |
+| Institute for Fiscal Studies | 403 | **Replaced** — refuses automated clients |
+| MoneySavingExpert | 403 | **Replaced** — same |
+
+The two 403s could be reached by sending a browser User-Agent, but that means
+circumventing a deliberate block, so they were replaced rather than spoofed.
+
+**The failures were concentrated in the generational-finance lane** — three of
+its six sources — while the AI lane lost one of fifteen. Replacements: Guardian
+Money, BBC Business and a GOV.UK pensions keyword feed, plus a GOV.UK data
+protection feed to backfill the ICO. Now 27 sources: 14 AI, 7 regulated,
+6 generational finance.
 
 ## What's next
 
-1. **Trigger the workflow manually** — Actions tab → *Weekly fetch* → **Run
+1. **Re-run the workflow** after the feeds.toml fix and confirm 27/27 sources.
    workflow**. GitHub runners have open egress, so this is the first real test of
    `radar fetch` and the fastest way to find out which feed URLs are wrong. The
    run will go red if more than 30% fail; the `fetch-log` artifact names each one.

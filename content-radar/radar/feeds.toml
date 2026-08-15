@@ -21,12 +21,9 @@ lane = "ai"
 weight = 0.95
 url = "https://simonwillison.net/atom/everything/"
 
-[[source]]
-name = "Anthropic Engineering"
-kind = "rss"
-lane = "ai"
-weight = 0.95
-url = "https://www.anthropic.com/rss.xml"
+# Anthropic publishes no official RSS feed (verified 2026-08: /rss.xml is a 404,
+# and only community scrapers exist). Their releases surface via Hacker News and
+# Simon Willison anyway, so this is a gap on paper more than in practice.
 
 [[source]]
 name = "OpenAI News"
@@ -137,12 +134,16 @@ lane = "regulated"
 weight = 0.95
 url = "https://www.fca.org.uk/news/rss.xml"
 
+# The ICO retired its RSS feeds — its own feeds page says news, blogs and
+# enforcement are "currently unavailable" after a site redesign. Nothing to fix;
+# GOV.UK's data-protection keyword feed below covers the same ground.
+
 [[source]]
-name = "ICO News"
+name = "GOV.UK — data protection"
 kind = "rss"
 lane = "regulated"
-weight = 0.9
-url = "https://ico.org.uk/rss/news-and-blogs/"
+weight = 0.85
+url = "https://www.gov.uk/search/news-and-communications.atom?keywords=data+protection"
 
 [[source]]
 name = "Bank of England"
@@ -165,12 +166,8 @@ lane = "regulated"
 weight = 0.55
 url = "https://www.finextra.com/rss/headlines.aspx"
 
-[[source]]
-name = "FT Adviser"
-kind = "rss"
-lane = "regulated"
-weight = 0.6
-url = "https://www.ftadviser.com/rss.xml"
+# FT Adviser's /rss.xml 404s and no public feed URL could be verified. Dropped
+# rather than left to fail every week.
 
 [[source]]
 name = "HN — AI regulation"
@@ -182,12 +179,32 @@ min_points = 30
 
 # ------------------------------------------------ Generational finance ----
 
+# MoneySavingExpert and the IFS both return 403 to a self-identifying client.
+# They could be reached by sending a browser User-Agent, but that means
+# circumventing a deliberate block, so they are replaced rather than spoofed.
+# The Guardian, BBC and GOV.UK feeds below cover the same territory — student
+# finance, pensions, cost of living — and are happy to be read by a feed reader.
+
 [[source]]
-name = "MoneySavingExpert"
+name = "Guardian Money"
 kind = "rss"
 lane = "genfinance"
-weight = 0.85
-url = "https://www.moneysavingexpert.com/rss/"
+weight = 0.8
+url = "https://www.theguardian.com/uk/money/rss"
+
+[[source]]
+name = "BBC Business"
+kind = "rss"
+lane = "genfinance"
+weight = 0.75
+url = "https://feeds.bbci.co.uk/news/business/rss.xml"
+
+[[source]]
+name = "GOV.UK — pensions"
+kind = "rss"
+lane = "genfinance"
+weight = 0.9
+url = "https://www.gov.uk/search/news-and-communications.atom?keywords=pensions"
 
 [[source]]
 name = "Which? News"
@@ -196,19 +213,7 @@ lane = "genfinance"
 weight = 0.85
 url = "https://www.which.co.uk/news/feed/"
 
-[[source]]
-name = "Institute for Fiscal Studies"
-kind = "rss"
-lane = "genfinance"
-weight = 0.9
-url = "https://ifs.org.uk/rss.xml"
-
-[[source]]
-name = "Pensions Age"
-kind = "rss"
-lane = "genfinance"
-weight = 0.75
-url = "https://www.pensionsage.com/pa/rss.php"
+# Pensions Age's /pa/rss.php 404s and no working feed URL could be verified.
 
 [[source]]
 name = "This is Money"
