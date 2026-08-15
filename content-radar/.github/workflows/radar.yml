@@ -40,28 +40,52 @@ jobs:
       - name: Test
         run: uv run pytest -q
 
-      # continue-on-error so a degraded fetch still produces a shortlist from
-      # whatever did come back. The job is failed at the end instead, so the
-      # run is visibly red and GitHub emails about it.
+      # A degraded fetch still produces a shortlist from whatever came back, so
+      # the exit code is captured rather than allowed to abort the job. The run
+      # is failed at the end instead — visibly red, and GitHub emails about it.
       - name: Fetch sources
         id: fetch
-        continue-on-error: true
         run: |
-          set -o pipefail
+          set +e
           uv run radar fetch --since 7 2>&1 | tee fetch.log
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Cluster and score
-        run: uv run radar score --since 7 --top 30
+        run: |
+          set -o pipefail
+          uv run radar score --since 7 --top 30 2>&1 | tee score.log
 
       - name: Prune committed state
         run: uv run radar prune
 
-      - name: Upload fetch log
+      # Put the results on the run's summary page. Without this the only way to
+      # see which sources failed or what ranked top is to expand a step or
+      # download an artifact, which is exactly the sort of friction that stops
+      # anyone actually looking.
+      - name: Publish results to the run summary
+        if: always()
+        run: |
+          {
+            echo "## Fetch"
+            echo '```'
+            cat fetch.log 2>/dev/null || echo "(the fetch step produced no log)"
+            echo '```'
+            echo "## Shortlist"
+            echo '```'
+            cat score.log 2>/dev/null || echo "(the score step produced no log)"
+            echo '```'
+            echo "Full shortlist: [\`state/candidates.json\`](../blob/main/state/candidates.json)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fetch-log
-          path: fetch.log
+          name: run-logs
+          path: |
+            fetch.log
+            score.log
           retention-days: 30
 
       - name: Commit shortlist
@@ -79,7 +103,7 @@ jobs:
       # A broken fetcher and a quiet news week must not look the same. Failing
       # here turns GitHub's own failure email into the alerting channel.
       - name: Fail the run if the fetch was degraded
-        if: steps.fetch.outcome == 'failure'
+        if: steps.fetch.outputs.code != '0'
         run: |
-          echo "::error::More than 30% of sources failed — see the fetch-log artifact."
+          echo "::error::More than 30% of sources failed — see the Fetch section of the run summary above."
           exit 1
