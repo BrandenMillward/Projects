@@ -108,14 +108,18 @@ min_points = 60
 name = "arXiv cs.AI"
 kind = "arxiv"
 lane = "ai"
-weight = 0.65
+# Deliberately low. arXiv is a firehose of preprints, and for a practitioner
+# writing about systems he has shipped, a paper is weaker raw material than a
+# talk or a vendor engineering post. On the first live run these outranked
+# everything useful; they are a supporting signal, not a lead.
+weight = 0.35
 category = "cs.AI"
 
 [[source]]
 name = "arXiv cs.CL"
 kind = "arxiv"
 lane = "ai"
-weight = 0.6
+weight = 0.3
 category = "cs.CL"
 
 # -------------------------------------------------- Regulated industries ----

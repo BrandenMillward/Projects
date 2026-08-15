@@ -12,6 +12,7 @@ the same input, which matters when debugging "why did that topic surface?".
 from __future__ import annotations
 
 import math
+import re
 from datetime import UTC, datetime
 
 from .models import Cluster
@@ -35,16 +36,29 @@ CORROBORATION_SATURATION = 8.0  # sources covering a story at which it scores ~1
 # gained real corroboration since.
 SEEN_PENALTY = 0.15
 
+# Authority tuning. Two title hits is a full score — a headline naming two of
+# Branden's terms is unambiguously his territory. Body text needs eight, and is
+# capped, so a long abstract stuffed with jargon cannot buy its way to the top.
+TITLE_HITS_FOR_FULL = 2.0
+BODY_HITS_FOR_FULL = 8.0
+AUTHORITY_BODY_CHARS = 400
+
 # The terms that mark a story as something Branden has standing to write about,
 # rather than generic AI news. This is the single highest-weighted component,
 # because "is this newsworthy" is abundant and "can he uniquely speak to it" is
 # the scarce signal.
+#
+# Terms are matched as prefixes anchored to a word boundary, so "regulat" covers
+# regulation and regulatory. Keep only the SHORTEST useful prefix of a family —
+# listing both "eval" and "evaluation" makes one word score twice and inflates
+# everything containing it.
 AUTHORITY_TERMS = {
     "ai": [
         "multi-agent", "multi agent", "agent network", "orchestration", "agentic",
-        "guardrail", "evaluation", "eval", "prompt", "context window", "tool use",
-        "rag", "retrieval", "fine-tun", "inference cost", "model context protocol",
-        "mcp", "agent skill", "upskilling", "adoption", "enterprise ai",
+        "guardrail", "eval", "prompt", "context window", "context engineer",
+        "coding agent", "tool use", "rag", "retrieval", "fine-tun",
+        "inference cost", "model context protocol", "mcp", "agent skill",
+        "upskilling", "adoption", "enterprise ai",
     ],
     "regulated": [
         "explainab", "interpretab", "xai", "model risk", "governance", "compliance",
@@ -99,18 +113,39 @@ def _engagement(cluster: Cluster) -> float:
     return min(math.log1p(points) / math.log1p(ENGAGEMENT_SATURATION), 1.0)
 
 
+def _term_in(text: str, term: str) -> bool:
+    """Prefix match anchored to a word boundary.
+
+    Anchoring matters: without it "rag" matches "storage" and "mcp" matches
+    nothing useful, while "eval" would also fire inside "evaluation" for a
+    second time if both were listed.
+    """
+    return re.search(r"\b" + re.escape(term), text) is not None
+
+
 def _authority(cluster: Cluster) -> float:
-    """Fraction of this lane's authority terms present in title or summary."""
+    """How strongly this story sits in Branden's territory.
+
+    A term in the *headline* means the story is about that thing. The same term
+    buried in an abstract means the author happened to use the word — an arXiv
+    abstract is long and dense with exactly this vocabulary, so counting body
+    text equally let every paper saturate the component regardless of whether
+    the topic was remotely relevant. Title hits are therefore worth four times a
+    body hit, and body text is capped so length alone cannot buy a score.
+    """
     terms = AUTHORITY_TERMS.get(cluster.lane, [])
     if not terms:
         return 0.0
 
-    haystack = " ".join([cluster.title] + [i.summary for i in cluster.items]).lower()
-    hits = sum(1 for term in terms if term in haystack)
-    if hits == 0:
-        return 0.0
-    # Three distinct hits is a strong match; more adds little.
-    return min(hits / 3.0, 1.0)
+    title = cluster.title.lower()
+    body = " ".join(i.summary for i in cluster.items).lower()[:AUTHORITY_BODY_CHARS]
+
+    title_hits = {t for t in terms if _term_in(title, t)}
+    # Don't pay twice for a term that already scored in the title.
+    body_hits = {t for t in terms if _term_in(body, t)} - title_hits
+
+    score = len(title_hits) / TITLE_HITS_FOR_FULL + len(body_hits) / BODY_HITS_FOR_FULL
+    return min(score, 1.0)
 
 
 def _corroboration(cluster: Cluster) -> float:
