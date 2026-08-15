@@ -1,0 +1,30 @@
+# Secrets — never commit these
+.env
+.env.local
+.env.*.local
+*.pem
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/transcripts/
+.claude/session.log
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/

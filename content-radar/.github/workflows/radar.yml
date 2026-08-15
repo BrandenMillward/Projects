@@ -1,0 +1,109 @@
+name: Weekly fetch
+
+# Runs the deterministic half of the radar — poll sources, cluster, score — and
+# commits the shortlist. The editorial half happens in Claude via /radar, which
+# then only needs to read this repo rather than reach the open internet.
+#
+# Split this way on purpose: "needs the internet" and "needs judgement" are
+# different problems, and only one of them needs a scheduler.
+
+on:
+  schedule:
+    # Monday 06:07 UTC. Deliberately not on the hour — every scheduled job in
+    # the world fires at :00, and GitHub queues them.
+    - cron: "7 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: radar
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv venv && uv pip install -e ".[dev]"
+
+      - name: Test
+        run: uv run pytest -q
+
+      # A degraded fetch still produces a shortlist from whatever came back, so
+      # the exit code is captured rather than allowed to abort the job. The run
+      # is failed at the end instead — visibly red, and GitHub emails about it.
+      - name: Fetch sources
+        id: fetch
+        run: |
+          set +e
+          uv run radar fetch --since 7 2>&1 | tee fetch.log
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Cluster and score
+        run: |
+          set -o pipefail
+          uv run radar score --since 7 --top 30 2>&1 | tee score.log
+
+      - name: Prune committed state
+        run: uv run radar prune
+
+      # Put the results on the run's summary page. Without this the only way to
+      # see which sources failed or what ranked top is to expand a step or
+      # download an artifact, which is exactly the sort of friction that stops
+      # anyone actually looking.
+      - name: Publish results to the run summary
+        if: always()
+        run: |
+          {
+            echo "## Fetch"
+            echo '```'
+            cat fetch.log 2>/dev/null || echo "(the fetch step produced no log)"
+            echo '```'
+            echo "## Shortlist"
+            echo '```'
+            cat score.log 2>/dev/null || echo "(the score step produced no log)"
+            echo '```'
+            echo "Full shortlist: [\`state/candidates.json\`](../blob/main/state/candidates.json)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-logs
+          path: |
+            fetch.log
+            score.log
+          retention-days: 30
+
+      - name: Commit shortlist
+        run: |
+          git config user.name "content-radar"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/
+          if git diff --staged --quiet; then
+            echo "nothing changed"
+          else
+            git commit -m "chore: weekly fetch $(date -u +%F)"
+            git push
+          fi
+
+      # A broken fetcher and a quiet news week must not look the same. Failing
+      # here turns GitHub's own failure email into the alerting channel.
+      - name: Fail the run if the fetch was degraded
+        if: steps.fetch.outputs.code != '0'
+        run: |
+          echo "::error::More than 30% of sources failed — see the Fetch section of the run summary above."
+          exit 1

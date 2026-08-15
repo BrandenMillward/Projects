@@ -1,0 +1,234 @@
+# Source list for the content radar.
+#
+# lane   — ai | regulated | genfinance
+# weight — trust/signal weight in [0, 1]. Primary sources (regulators, labs,
+#          practitioners who ship) outrank aggregators and trade press.
+# kind   — rss | hn | arxiv
+#
+# Every source here is free and keyless. Reddit is deliberately absent:
+# unauthenticated .json endpoints were deprecated in May 2026 (403), and OAuth
+# registration is approval-gated. See docs/project_spec.md.
+#
+# Adding a source is a one-entry change; a source that starts failing is
+# reported in the brief rather than silently dropped.
+
+# ---------------------------------------------------------------- AI lane ----
+
+[[source]]
+name = "Simon Willison"
+kind = "rss"
+lane = "ai"
+weight = 0.95
+url = "https://simonwillison.net/atom/everything/"
+
+# Anthropic publishes no official RSS feed (verified 2026-08: /rss.xml is a 404,
+# and only community scrapers exist). Their releases surface via Hacker News and
+# Simon Willison anyway, so this is a gap on paper more than in practice.
+
+[[source]]
+name = "OpenAI News"
+kind = "rss"
+lane = "ai"
+weight = 0.85
+url = "https://openai.com/news/rss.xml"
+
+[[source]]
+name = "Google DeepMind"
+kind = "rss"
+lane = "ai"
+weight = 0.85
+url = "https://deepmind.google/blog/rss.xml"
+
+[[source]]
+name = "Hugging Face"
+kind = "rss"
+lane = "ai"
+weight = 0.8
+url = "https://huggingface.co/blog/feed.xml"
+
+[[source]]
+name = "MIT Technology Review"
+kind = "rss"
+lane = "ai"
+weight = 0.75
+url = "https://www.technologyreview.com/feed/"
+
+[[source]]
+name = "Ars Technica"
+kind = "rss"
+lane = "ai"
+weight = 0.7
+url = "https://feeds.arstechnica.com/arstechnica/technology-lab"
+
+[[source]]
+name = "The Verge AI"
+kind = "rss"
+lane = "ai"
+weight = 0.6
+url = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
+
+[[source]]
+name = "TechCrunch AI"
+kind = "rss"
+lane = "ai"
+weight = 0.55
+url = "https://techcrunch.com/category/artificial-intelligence/feed/"
+
+[[source]]
+name = "VentureBeat AI"
+kind = "rss"
+lane = "ai"
+weight = 0.5
+url = "https://venturebeat.com/category/ai/feed/"
+
+[[source]]
+name = "InfoQ AI"
+kind = "rss"
+lane = "ai"
+weight = 0.6
+url = "https://feed.infoq.com/ai-ml-data-eng/"
+
+[[source]]
+name = "HN — AI agents"
+kind = "hn"
+lane = "ai"
+weight = 0.7
+query = "AI agents"
+min_points = 40
+
+[[source]]
+name = "HN — LLM"
+kind = "hn"
+lane = "ai"
+weight = 0.7
+query = "LLM"
+min_points = 60
+
+[[source]]
+name = "arXiv cs.AI"
+kind = "arxiv"
+lane = "ai"
+# Deliberately low. arXiv is a firehose of preprints, and for a practitioner
+# writing about systems he has shipped, a paper is weaker raw material than a
+# talk or a vendor engineering post. On the first live run these outranked
+# everything useful; they are a supporting signal, not a lead.
+weight = 0.35
+category = "cs.AI"
+
+[[source]]
+name = "arXiv cs.CL"
+kind = "arxiv"
+lane = "ai"
+weight = 0.3
+category = "cs.CL"
+
+# -------------------------------------------------- Regulated industries ----
+
+[[source]]
+name = "EU AI Act"
+kind = "rss"
+lane = "regulated"
+weight = 0.95
+url = "https://artificialintelligenceact.eu/feed/"
+
+[[source]]
+name = "FCA News"
+kind = "rss"
+lane = "regulated"
+weight = 0.95
+url = "https://www.fca.org.uk/news/rss.xml"
+
+# The ICO retired its RSS feeds — its own feeds page says news, blogs and
+# enforcement are "currently unavailable" after a site redesign. Nothing to fix;
+# GOV.UK's data-protection keyword feed below covers the same ground.
+
+[[source]]
+name = "GOV.UK — data protection"
+kind = "rss"
+lane = "regulated"
+weight = 0.85
+url = "https://www.gov.uk/search/news-and-communications.atom?keywords=data+protection"
+
+[[source]]
+name = "Bank of England"
+kind = "rss"
+lane = "regulated"
+weight = 0.9
+url = "https://www.bankofengland.co.uk/rss/news"
+
+[[source]]
+name = "NIST"
+kind = "rss"
+lane = "regulated"
+weight = 0.8
+url = "https://www.nist.gov/news-events/news/rss.xml"
+
+[[source]]
+name = "Finextra"
+kind = "rss"
+lane = "regulated"
+weight = 0.55
+url = "https://www.finextra.com/rss/headlines.aspx"
+
+# FT Adviser's /rss.xml 404s and no public feed URL could be verified. Dropped
+# rather than left to fail every week.
+
+[[source]]
+name = "HN — AI regulation"
+kind = "hn"
+lane = "regulated"
+weight = 0.6
+query = "AI regulation compliance"
+min_points = 30
+
+# ------------------------------------------------ Generational finance ----
+
+# MoneySavingExpert and the IFS both return 403 to a self-identifying client.
+# They could be reached by sending a browser User-Agent, but that means
+# circumventing a deliberate block, so they are replaced rather than spoofed.
+# The Guardian, BBC and GOV.UK feeds below cover the same territory — student
+# finance, pensions, cost of living — and are happy to be read by a feed reader.
+
+[[source]]
+name = "Guardian Money"
+kind = "rss"
+lane = "genfinance"
+weight = 0.8
+url = "https://www.theguardian.com/uk/money/rss"
+
+[[source]]
+name = "BBC Business"
+kind = "rss"
+lane = "genfinance"
+weight = 0.75
+url = "https://feeds.bbci.co.uk/news/business/rss.xml"
+
+[[source]]
+name = "GOV.UK — pensions"
+kind = "rss"
+lane = "genfinance"
+weight = 0.9
+url = "https://www.gov.uk/search/news-and-communications.atom?keywords=pensions"
+
+[[source]]
+name = "Which? News"
+kind = "rss"
+lane = "genfinance"
+weight = 0.85
+url = "https://www.which.co.uk/news/feed/"
+
+# Pensions Age's /pa/rss.php 404s and no working feed URL could be verified.
+
+[[source]]
+name = "This is Money"
+kind = "rss"
+lane = "genfinance"
+weight = 0.5
+url = "https://www.thisismoney.co.uk/money/index.rss"
+
+[[source]]
+name = "GOV.UK — student finance"
+kind = "rss"
+lane = "genfinance"
+weight = 0.9
+url = "https://www.gov.uk/search/news-and-communications.atom?keywords=student+finance"
