@@ -31,6 +31,8 @@ The spec has three parts, built in this order:
 
 **3. Engineering design** — the technical requirements for how it gets built: tech stack, engineering requirements, architecture, system design. Do not pick the stack for them silently. Read `references/engineering-design.md` — it covers the research report you produce first (with live lookups, not memory), the house stack menu, and how to present the choice.
 
+While you're here, walk the quality attributes once — `references/iso-standards.md` explains why the ISO/IEC 25010 characteristics are worth borrowing even when no standard applies. Most will be "not a concern"; the two or three that matter turn vague engineering requirements into numbers.
+
 **Gate:** write `docs/project_spec.md`, show it, and ask for explicit sign-off before touching Phase 2. If they want changes, revise and re-ask.
 
 ## Phase 2 — Setup
@@ -49,21 +51,22 @@ Work through these in order. Each has a reference file with the detail; read it 
 | 2 | `.env` + `.env.example` — derived from the chosen stack's services | `references/documentation-system.md` |
 | 3 | `CLAUDE.md` — project memory, kept short and pointing outward | `references/documentation-system.md` |
 | 4 | Documentation set — spec, architecture, changelog, status, feature refs | `references/documentation-system.md` |
-| 5 | Plugins — walk through what's worth installing and why | `references/plugins-and-mcp.md` |
-| 6 | MCP servers — same, with the auth/cost reality of each | `references/plugins-and-mcp.md` |
-| 7 | Slash commands + subagents — tailored to this project | `references/commands-and-agents.md` |
-| 8 | Hooks — recommend a starter set, explain the tradeoff of each | `references/hooks.md` |
-| 9 | Commit and push | below |
+| 5 | Standards — coding standard, toolchain, and whether any formal regime applies | `references/coding-standards.md`, `references/iso-standards.md` |
+| 6 | Plugins — walk through what's worth installing and why | `references/plugins-and-mcp.md` |
+| 7 | MCP servers — same, with the auth/cost reality of each | `references/plugins-and-mcp.md` |
+| 8 | Slash commands + subagents — tailored to this project | `references/commands-and-agents.md` |
+| 9 | Hooks — recommend a starter set, explain the tradeoff of each | `references/hooks.md` |
+| 10 | Commit and push | below |
 
 ### Step 1 — GitHub repo
 
 Ask for the repo name (default: kebab-case of the project name) and public vs private before creating anything. Creating a repo is outward-facing and hard to undo quietly, so confirm rather than assume.
 
-Use `mcp__github__create_repository` if the GitHub MCP tools are available, otherwise `gh repo create`. Then `git init` locally if needed, and set the remote. Don't push yet — push once at step 9 with a complete initial commit.
+Use `mcp__github__create_repository` if the GitHub MCP tools are available, otherwise `gh repo create`. Then `git init` locally if needed, and set the remote. Don't push yet — push once at step 10 with a complete initial commit.
 
 If the project lives inside an existing repo, skip creation and just confirm which branch to work on.
 
-### Step 9 — Commit and push
+### Step 10 — Commit and push
 
 One initial commit containing the whole scaffold, on a branch, with a message that says what the project is. Then `git push -u origin <branch>`. Only open a PR if the user asks.
 
@@ -77,6 +80,10 @@ The failure mode of a skill like this is a 40-question interrogation followed by
 - **Let them cut scope.** If they want to skip a step ("no hooks for now"), skip it and note it in `PROJECT_STATUS.md` under what's next. Don't relitigate.
 - **Keep a running summary.** Between phases, restate decisions made so far in a few lines. Long interviews drift, and it's how you catch a contradiction before it's baked into the architecture.
 
+## After setup — changes to the baseline
+
+Once the spec is signed off and the repo exists, changes to it are `project-change`'s job: it diffs against this spec rather than drafting one, and it reads the `docs/STANDARDS.md` written here to decide which gates a change must clear. Mention it once at the end of setup; don't run it in the same breath.
+
 ## When the project already exists
 
 If they run this on a repo that already has code, don't scaffold over it. Read the code first, then use the same phases to *recover* the spec — draft `project_spec.md` from what's actually there, show it, and let them correct it. Merge into existing `CLAUDE.md` and docs rather than overwriting. Ask before replacing any file that already has content.
@@ -88,6 +95,8 @@ If they run this on a repo that already has code, don't scaffold over it. Read t
 - `references/documentation-system.md` — CLAUDE.md and the doc set, what goes where, how they stay current
 - `references/plugins-and-mcp.md` — how to walk through plugins and MCP servers
 - `references/commands-and-agents.md` — choosing and writing slash commands and subagents
+- `references/coding-standards.md` — the house code baseline, toolchain per stack, enforcement ladder
+- `references/iso-standards.md` — whether any formal standard applies, and the clause-to-artifact map
 - `references/hooks.md` — hook events and a recommended starter set
 - `assets/templates/` — file templates the scaffold script copies
 - `assets/commands/`, `assets/agents/`, `assets/hooks/` — starter commands, subagents, hook config

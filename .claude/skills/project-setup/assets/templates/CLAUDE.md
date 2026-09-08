@@ -17,7 +17,11 @@ See `docs/ARCHITECTURE.md`.
 
 ## Style guide
 
-<!-- Code conventions, naming, file layout. If there's a UI, the visual rules that keep it coherent. -->
+<!-- The short version only. Full rules, toolchain and quality targets live in docs/STANDARDS.md —
+     don't duplicate them here, or the two will disagree within a month.
+     If there's a UI, the visual rules that keep it coherent belong here. -->
+
+See `docs/STANDARDS.md` for coding standards and the check commands.
 
 ## Constraints and policies
 
@@ -45,6 +49,7 @@ See `docs/ARCHITECTURE.md`.
 ## Documentation
 
 - `docs/project_spec.md` — requirements, milestones, engineering design (source of truth)
+- `docs/STANDARDS.md` — coding standards, quality targets, applicable standards
 - `docs/ARCHITECTURE.md` — system overview and component architecture
 - `docs/PROJECT_STATUS.md` — milestones, what's done, what's next
 - `docs/CHANGELOG.md` — history of changes

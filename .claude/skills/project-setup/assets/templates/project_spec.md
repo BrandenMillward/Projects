@@ -83,6 +83,30 @@ Capability-based, not date-based. Each version is independently useful.
 - 
 - 
 
+### Quality attributes
+
+<!-- Derived from the ISO/IEC 25010:2023 quality model — used here as a checklist against
+     forgetting a whole dimension, not as a compliance exercise. Most rows are legitimately
+     "not a concern for this project"; say so rather than deleting the row, so the next
+     person knows it was considered. Every row that IS a concern needs a number.
+     Full targets and the toolchain live in docs/STANDARDS.md. -->
+
+| Characteristic | Target |
+|---|---|
+| Functional suitability | |
+| Performance efficiency | |
+| Reliability | |
+| Security | |
+| Maintainability | |
+| Interaction capability | |
+| Compatibility / flexibility / safety | |
+
+### Standards
+
+**Coding standard:** see `docs/STANDARDS.md`
+**Formal standards regime:** <!-- "none applies" for most projects. If one does, name it
+                                  and the clause, and point at where the evidence lives. -->
+
 ### Architecture
 
 #### System overview

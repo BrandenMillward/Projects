@@ -39,6 +39,7 @@ DOC_LAYOUT = {
     "ARCHITECTURE.md": "docs/ARCHITECTURE.md",
     "CHANGELOG.md": "docs/CHANGELOG.md",
     "PROJECT_STATUS.md": "docs/PROJECT_STATUS.md",
+    "STANDARDS.md": "docs/STANDARDS.md",
     "CLAUDE.md": "CLAUDE.md",
     "env.example": ".env.example",
 }
