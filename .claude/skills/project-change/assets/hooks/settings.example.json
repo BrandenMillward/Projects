@@ -1,0 +1,66 @@
+{
+  "_README": [
+    "Change-management hooks. These EXTEND the starter set in project-setup's",
+    "references/hooks.md — they do not replace it. Copy the blocks you want into",
+    ".claude/settings.json, substitute the project's real commands, and DELETE the rest.",
+    "",
+    "Posture: coding standards bite, process advises.",
+    "  - format / lint / secret-scan  -> hard gates, exit 2 to block",
+    "  - spec drift, open records     -> print a warning, never block",
+    "A guard that fires on safe work gets disabled within a week, and a disabled guard",
+    "is worse than none. Keep the blocking set small and specific.",
+    "",
+    "Every PreToolUse/PostToolUse hook runs on EVERY matching call. Keep them fast.",
+    "Test each one by triggering it before declaring it done.",
+    "",
+    "Remove this _README key from the real settings file."
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "_comment": "HARD GATE. Block a commit that stages .env or anything matching a key pattern. This is the one hook that pays for itself — a leaked key is the most expensive mistake in a solo project.",
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "staged=$(git diff --cached --name-only); echo \"$staged\" | grep -qE '(^|/)\\.env$' && { echo 'BLOCKED: .env is staged.' >&2; exit 2; }; git diff --cached -U0 | grep -qE '(sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' && { echo 'BLOCKED: staged diff contains something shaped like a credential.' >&2; exit 2; }; exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "_comment": "HARD GATE. Lint the file that was just written; exit 2 sends the failure back to be fixed. Swap in the project's real linter.",
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.py) ruff check \"$f\" || exit 2 ;; *.ts|*.tsx) npx --no-install eslint \"$f\" || exit 2 ;; esac"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "_comment": "ADVISORY. If code under src/ changed but docs/project_spec.md did not, say so. Never blocks — the threshold rule means most changes legitimately do not touch the spec.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "changed=$(git diff --name-only HEAD 2>/dev/null); echo \"$changed\" | grep -qE '^(src|app|lib)/' && ! echo \"$changed\" | grep -q 'docs/project_spec.md' && echo 'Note: code changed, spec did not. If this altered a requirement, amend the spec before committing.'; exit 0"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "_comment": "ADVISORY. List open change records so you pick up where you left off instead of doing archaeology.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -d docs/changes ] && grep -l 'status: open\\|status: approved\\|status: in-progress' docs/changes/*.md 2>/dev/null | head -5 | while read -r f; do sed -n 's/^title: //p' \"$f\" | head -1 | sed \"s|^|OPEN $(basename \"$f\" .md): |\"; done; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}
